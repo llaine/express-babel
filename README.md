@@ -9,10 +9,8 @@ In order to contribute to this project, a few guidelines needs to be respected :
 - Never push on master directly.
 - Don't push on develop for new features.
 - Works with pull request for new features.
+- Work with flow, test and eslint.
 - Respect the .editorconfig
-- Before pushing run the test and the linter
-
-
 
 ## Deps
 
@@ -25,9 +23,11 @@ In order to contribute to this project, a few guidelines needs to be respected :
 ```bash
 $ git clone ... && cd
 $ npm install
+$ npm run install-flow-deps
 $ npm run start # Browse localhost:3000
 ```
 
+# Code quality
 
 ## Tests
 
@@ -35,13 +35,17 @@ $ npm run start # Browse localhost:3000
 $ npm run test
 ```
 
-
 ## Linter
 
 ```bash
 $ npm run lint
 ```
 
+## Flow
+
+```bash
+$ npm run flow
+```
 
 ## Docker
 
