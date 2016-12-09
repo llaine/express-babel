@@ -1,5 +1,7 @@
-# i18n service
+# Dooku
 
+
+This service provide I18n for the pantaflix services.
 
 ## Deps
 
@@ -19,8 +21,8 @@ $ npm run start # Browse localhost:3000
 ## Docker
 
 ```bash
-$ docker build -t i18n.pantaflix .
-$ docker run -t -p 3000:3000 -i i18n.pantaflix # browse localhost:3000
+$ docker build -t dooku.pantaflix .
+$ docker run -t -p 3000:3000 -i dooku.pantaflix # browse localhost:3000
 ```
 
 
