@@ -2,6 +2,7 @@
   "get": {
     "description": "Return the project",
     "x-swagger-router-controller": "index",
+    "operationId": "index",
     "parameters": [
       {
         "name": "lang",

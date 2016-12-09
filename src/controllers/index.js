@@ -1,8 +1,16 @@
+// @flow
+
+import LokaliseService from '../services/lokalise';
+
 /**
- *
+ * Index route
  * @param req
  * @param res
  */
-export function get(req, res) {
-  res.json({hello: 'world'});
+export function index(req: any, res: any) {
+  new LokaliseService()
+      .getProjects()
+      .then(projects => {
+        res.send(projects);
+      });
 }

@@ -41,6 +41,7 @@
     "es6": true,
     "mocha": true
   },
+  "parser": "babel-eslint",
   "parserOptions": {
     "ecmaVersion": 6,
     "sourceType": "module"
@@ -403,5 +404,11 @@
     "require-yield": 0
   },
 
-  "extends": "eslint:recommended"
+  "extends": [
+    "eslint:recommended",
+    "plugin:flowtype/recommended"
+  ],
+  "plugins": [
+    "flowtype"
+  ]
 }
