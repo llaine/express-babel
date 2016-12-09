@@ -1,0 +1,34 @@
+{
+  "get": {
+    "description": "Return the project",
+    "x-swagger-router-controller": "index",
+    "parameters": [
+      {
+        "name": "lang",
+        "in": "query",
+        "description": "Lang of the i18n",
+        "required": false,
+        "type": "string"
+      },
+      {
+        "name": "project",
+        "in": "query",
+        "description": "Lang of the i18n",
+        "required": false,
+        "type": "string"
+      },
+      {
+        "name": "format",
+        "in": "query",
+        "description": "Lang of the i18n",
+        "required": false,
+        "type": "string"
+      }
+    ],
+    "responses": {
+      "200": {
+        "description": "Success"
+      }
+    }
+  }
+}
