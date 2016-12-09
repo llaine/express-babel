@@ -1,5 +1,5 @@
 'use strict';
-import LoggerService from '../services/logger';
+import loggerService from '../services/logger';
 
 /**
  * Logger middleware for each method.
@@ -7,7 +7,7 @@ import LoggerService from '../services/logger';
  * @param res
  * @param next
  */
-export default function (req, res, next) {
-  LoggerService(req, "Method " + req.method + " on resource " + req.url);
+export default function(req, res, next) {
+  loggerService(req, 'Method ' + req.method + ' on resource ' + req.url);
   next();
 }

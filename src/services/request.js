@@ -8,15 +8,15 @@ export default class RequestService {
   }
 
   get(url) {
-    return new Promise(function (resolve, reject) {
+    return new Promise(function(resolve, reject) {
       const qs = {
         api_token: this.api_token
       };
-      request.get({url, qs}).on('error', function (err) {
+      request.get({url, qs}).on('error', function(err) {
         reject(err);
-      }).on('response', function (response) {
-        resolve(response)
-      })
+      }).on('response', function(response) {
+        resolve(response);
+      });
     });
   }
 

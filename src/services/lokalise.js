@@ -8,7 +8,7 @@ import lokaliseConfig from '../config/lokalise.json';
  */
 export default class LokaliseService {
   constructor() {
-    this.token = lokaliseConfig.credentials.api - key;
+    this.token = lokaliseConfig.credentials['api-key'];
   }
 
   projects() {
