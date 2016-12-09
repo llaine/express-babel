@@ -4,7 +4,6 @@ import sinon from 'sinon';
 import chai from 'chai';
 import request from 'request';
 
-import '../../src/server';
 import RequestService from '../../src/services/request';
 
 describe('RequestService', () => {

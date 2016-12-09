@@ -8,6 +8,7 @@ describe('Logger', () => {
     before(() => sinon.spy(console, 'log'));
     after(() => console.log.restore());
 
+
     it('display a log in console with string', () => {
       new logger('Hello World');
       chai.expect(console.log).to.be.called;
