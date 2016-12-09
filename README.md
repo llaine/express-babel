@@ -7,9 +7,8 @@ This service provide I18n for the pantaflix services.
 In order to contribute to this project, a few guidelines needs to be respected :
 
 - Never push on master directly.
-- You can push on develop only for hotfixes.
-  If so, you need to prefix your git commit, ex : `git commit -m 'hotfix: message''`
-- Works with pull request for any new features.
+- Don't push on develop for new features.
+- Works with pull request for new features.
 - Respect the .editorconfig
 - Before pushing run the test and the linter
 
