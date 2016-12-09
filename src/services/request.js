@@ -1,13 +1,16 @@
+// @flow
 'use strict';
 
 import request from 'request';
 
 export default class RequestService {
-  constructor(apiToken) {
+  apiToken: string;
+
+  constructor(apiToken: string) {
     this.apiToken = apiToken;
   }
 
-  get(url) {
+  get(url: string) {
     return new Promise((resolve, reject) => {
       const qs = {
         api_token: this.apiToken
