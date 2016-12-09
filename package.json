@@ -42,7 +42,7 @@
   },
   "scripts": {
     "lint": "eslint src/**",
-    "test": "mocha --compilers js:babel-register",
+    "test": "mocha test --recursive --compilers js:babel-register",
     "start": "nodemon src/server.js --exec babel-node",
     "clean": "rm -rf build",
     "copy-swagger-folder": "mkdir build/swagger ; cp -R src/swagger/* build/swagger/",

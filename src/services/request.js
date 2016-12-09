@@ -3,14 +3,14 @@
 import request from 'request';
 
 export default class RequestService {
-  constructor(url, apiToken) {
+  constructor(apiToken) {
     this.apiToken = apiToken;
   }
 
   get(url) {
-    return new Promise(function(resolve, reject) {
+    return new Promise((resolve, reject) => {
       const qs = {
-        api_token: this.api_token
+        api_token: this.apiToken
       };
       request.get({url, qs}).on('error', function(err) {
         reject(err);
