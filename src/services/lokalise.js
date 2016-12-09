@@ -1,5 +1,7 @@
 import lokaliseConfig from '../config/lokalise.json';
 
+import RequestService from '../services/request';
+
 /**
  * Lokalise service.
  * This class convers all of the function of lokalise.
@@ -11,7 +13,16 @@ export default class LokaliseService {
     this.token = lokaliseConfig.credentials['api-key'];
   }
 
-  projects() {
-
+  /**
+   * Load project from the Lokalise API
+   * @returns {Promise}
+   */
+  getProjects() {
+    return new Promise((resolve, reject) => {
+      new RequestService(this.token)
+          .get(lokaliseConfig.resources.projects)
+          .then((result) => resolve(result.projects))
+          .catch((err) => reject(err));
+    });
   }
 }

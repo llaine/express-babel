@@ -12,10 +12,9 @@ export default class RequestService {
       const qs = {
         api_token: this.apiToken
       };
-      request.get({url, qs}).on('error', function(err) {
-        reject(err);
-      }).on('response', function(response) {
-        resolve(response);
+      request.get({url, qs}, (error, response, body) => {
+        if (error) reject(error);
+        resolve(JSON.parse(body));
       });
     });
   }
