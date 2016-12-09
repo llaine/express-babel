@@ -31,8 +31,16 @@ $ npm run start # Browse localhost:3000
 
 ## Tests
 
+```bash
+$ npm run test
+```
+
 
 ## Linter
+
+```bash
+$ npm run lint
+```
 
 
 ## Docker
