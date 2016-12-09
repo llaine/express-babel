@@ -8,6 +8,6 @@ import LoggerService from '../services/logger';
  * @param next
  */
 export default function (req, res, next) {
-    LoggerService(req, "Method " + req.method + " on resource " + req.url);
-    next();
+  LoggerService(req, "Method " + req.method + " on resource " + req.url);
+  next();
 }

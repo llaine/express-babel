@@ -1,0 +1,8 @@
+{
+  "credentials": {
+    "api-key": "c3c8f3c7d56c5de900a5e690ea6f861159b01bc5"
+  },
+  "resources": {
+    "projects": "https://lokalise.co/api/project/list"
+  }
+}

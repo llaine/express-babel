@@ -14,7 +14,7 @@ import LoggerMiddleware from './middlewares/logger';
 // Options configuration
 const PORT = process.env.port || 3000;
 const controllersOpts = {
-    "controllers": `${__dirname}/controllers`
+  "controllers": `${__dirname}/controllers`
 };
 
 // App creation
@@ -26,14 +26,14 @@ app.use(LoggerMiddleware);
 
 // Swagger conf
 JsonRefs.resolveRefs(SwaggerDoc)
-.then(SwaggerDoc => {
-    SwaggerTools.initializeMiddleware(SwaggerDoc.resolved, Middlerwares => {
+    .then(SwaggerDoc => {
+      SwaggerTools.initializeMiddleware(SwaggerDoc.resolved, Middlerwares => {
         app.use(Cors());
         app.use(Middlerwares.swaggerMetadata());
         app.use(Middlerwares.swaggerValidator());
         app.use(Middlerwares.swaggerUi());
         app.use(Middlerwares.swaggerRouter(controllersOpts));
-    })
-});
+      })
+    });
 
 app.listen(PORT, () => console.log(`Listenning to ${PORT}`))
