@@ -19,6 +19,9 @@
     "/": {
       "$ref": "./src/swagger/routes/index.json"
     },
+    "/projects": {
+      "$ref": "./src/swagger/routes/projects.json"
+    },
     "/swagger": {
       "x-swagger-pipe": "swagger_raw"
     }

@@ -1,5 +1,7 @@
 'use strict';
 
+const DEBUG_ENABLED = true
+
 /**
  * Return formated date like
  * 09-12-2016 09:59:52-788
@@ -28,16 +30,21 @@ const formatDate = (d) => {
 };
 
 
+export function debug(args) {
+  if (DEBUG_ENABLED) {
+    console.log(`[${formatDate(new Date())}] - ${args}`);
+  }
+}
+
 /**
  * Default logger middleware.
  * Display basic logging feature like
  * [09-12-2016 10:01:59-714 from ::1] Method GET on resource /
  */
-export default function() {
+export function logRequest() {
   if (typeof arguments[0] === 'string') {
     arguments[0] = '[' + formatDate(new Date()) + '] ' + arguments[0];
-  }
-  else {
+  } else {
     /* Assume the parameter is a request */
     arguments[0] = '[' + formatDate(new Date()) + ' from ' + arguments[0].connection.remoteAddress + '] ' + arguments[1];
     arguments[1] = '';

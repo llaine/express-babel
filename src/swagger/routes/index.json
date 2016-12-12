@@ -1,6 +1,6 @@
 {
   "get": {
-    "description": "Return the project",
+    "description": "return the translations for a specific project in a specific lang",
     "x-swagger-router-controller": "index",
     "operationId": "index",
     "parameters": [
@@ -14,16 +14,23 @@
       {
         "name": "project",
         "in": "query",
-        "description": "Lang of the i18n",
-        "required": false,
+        "description": "Project wanted",
+        "required": true,
         "type": "string"
       },
       {
         "name": "format",
         "in": "query",
-        "description": "Lang of the i18n",
+        "description": "Format of the project could be po/json/xml ...",
         "required": false,
         "type": "string"
+      },
+      {
+        "name": "reload",
+        "in": "query",
+        "description": "Explicitly tell the service to fetch from the API and reload the filesystem",
+        "required": false,
+        "type": "boolean"
       }
     ],
     "responses": {

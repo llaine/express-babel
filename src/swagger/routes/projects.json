@@ -1,0 +1,12 @@
+{
+  "get": {
+    "description": "Return all the lokalise projects available",
+    "x-swagger-router-controller": "projects",
+    "operationId": "index",
+    "responses": {
+      "200": {
+        "description": "Success"
+      }
+    }
+  }
+}
