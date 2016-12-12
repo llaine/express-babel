@@ -22,7 +22,7 @@ export function index(req: any, res: any) {
         .then(result => res.send(result))
         .catch(err => res.send(err));
   } else {
-    lokalise.getTranslation(params)
+    lokalise.getTranslations(params)
         .then(result => res.send(result))
         .catch(err => res.send(err));
   }

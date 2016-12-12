@@ -1,7 +1,6 @@
-
 import FileSystemService from './file';
 import RequestService from './request';
-import { debug } from '../services/logger';
+import {debug} from '../services/logger';
 
 import lokaliseConfig from '../config/lokalise.json';
 
@@ -24,8 +23,11 @@ export default class LokaliseService {
     this.token = lokaliseConfig.credentials['api-key'];
     this.requestService = new RequestService(this.token);
     this.responses = {
-      path_doesnt_exists: {
-        code: 'nil_folder',
+      folder_is_nil: {
+        code: 'nil_folder'
+      },
+      translation_is_nil: {
+        code: 'nil_translation',
         message: 'Translation requested doesnt exists'
       }
     };
@@ -38,8 +40,7 @@ export default class LokaliseService {
   getProjects() {
     debug('#getProjects');
     return new Promise((resolve, reject) => {
-      new RequestService(this.token)
-          .get(lokaliseConfig.resources.projects)
+      this.requestService.get(lokaliseConfig.resources.projects)
           .then((result) => resolve(result.projects))
           .catch((err) => reject(err));
     });
@@ -56,41 +57,13 @@ export default class LokaliseService {
       if (FileSystemService.pathExists(params.project)) {
         debug(`#getTranslationFromFS : get translations from filesystem with : ${JSON.stringify(params)}`);
 
-        this.retrieveTranslationsFiles(params.lang, params.project, params.format)
+        FileSystemService.readFiles(params.lang, params.project, params.format)
             .then(result => resolve(result))
             .catch(err => reject(err));
       } else {
         debug(`#getTranslationFromFS : project directory ${params.project} doesnt exists`);
 
-        reject(this.responses.path_doesnt_exists);
-      }
-    });
-  }
-
-  /**
-   * Retrive translations for one or multiple language
-   * in a directory.
-   * @param lang
-   * @param projectDir
-   * @param format
-   * @returns {Promise}
-   */
-  retrieveTranslationsFiles(lang?: string, projectDir: string, format: string) {
-    return new Promise((resolve, reject) => {
-      debug(`#retrieveTranslationsFiles : Retrieving translations files for ${lang} at ${projectDir} in ${format}`);
-      if (!lang) {
-        // Reading all from FS
-        FileSystemService.readJsonFiles(projectDir).then(result => resolve(result)).catch(r => reject(r));
-        return;
-      }
-
-      const langFile = `${projectDir}/${lang}.${format}`;
-
-      if (FileSystemService.pathExists(langFile)) {
-        FileSystemService.readJsonFile(langFile).then(result => resolve(result)).catch(r => reject(r));
-      } else {
-        debug(`#retrieveTranslationsFiles : ${langFile} doesn't exists`);
-        reject(this.responses.path_doesnt_exists);
+        reject(this.responses.folder_is_nil);
       }
     });
   }
@@ -105,9 +78,9 @@ export default class LokaliseService {
     return new Promise((resolve, reject) => {
       debug(`#getTranslationFromApi : Getting translations for ${params.project} with type ${params.format}`);
       this.requestService
-          .processZipFile(lokaliseConfig.resources.download, { id: params.project, type: params.format })
+          .processZipFile(lokaliseConfig.resources.download, {id: params.project, type: params.format})
           .then(() => {
-            debug('#getTranslationFromApi : Downloading ZIP finished');
+            debug('#getTranslationFromApi : Zip file processed ZIP finished');
             // Once we downloaded the zip, we can read it from the file system.
             this.getTranslationFromFS(params)
                 .then(result => resolve(result))
@@ -123,39 +96,19 @@ export default class LokaliseService {
    * @param params
    * @returns {Promise}
    */
-  getTranslation(params: ProjectParams): Promise {
-    return new Promise((resolve, reject) => {
-      debug('#getTranslation : Getting translations for project');
-      this.getTranslationsForProject(params)
-          .then(result => resolve(result))
-          .catch(error => reject(error));
-    });
-  }
-
-  /**
-   * Handle the fetching of the translations.
-   * By default coming from the file system.
-   * @param params
-   * @returns {Promise}
-   */
-  getTranslationsForProject(params: ProjectParams) {
+  getTranslations(params: ProjectParams): Promise {
     return new Promise((resolve, reject) => {
       debug('#getTranslationsForProject : Getting translations for project');
 
       this.getTranslationFromFS(params)
-        .then(result => resolve(result))
-        .catch(error => {
-          // This project doesnt exists we have to fetch from the API
-          if (error.code === 'nil_folder') {
-            debug('#getTranslationsForProject : Translations doesnt exists, fetching from api ...');
-
-            this.getTranslationFromApi(params)
-                .then(result => resolve(result))
-                .catch(err => reject(err));
-          } else {
-            reject(error);
-          }
-        });
+          .then(result => resolve(result))
+          .catch(error => {
+            if (error.code === 'nil_folder') {
+              this.getTranslationFromApi(params).then(result => resolve(result)).catch(err => reject(err));
+            } else {
+              reject(error);
+            }
+          });
     });
   }
 }

@@ -59,21 +59,21 @@ export default class RequestService {
    * @param form
    * @returns {Promise}
    */
-  getDownloadUrlForProject(url: string, form: any) {
+  getArchivePath(url: string, form: any) {
     return new Promise((resolve, reject) => {
-      debug(`#getDownloadUrlForProject : Downloading ${url} with params ${JSON.stringify(form)}`);
+      debug(`#getArchivePath : Downloading ${url} with params ${JSON.stringify(form)}`);
 
       this.post(url, form)
           .then(result => {
             if (result.response.status === 'error') {
               reject(result);
             } else {
-              debug(`#getDownloadUrlForProject : Url : ${JSON.stringify(result)}`);
+              debug(`#getArchivePath : Url : ${JSON.stringify(result)}`);
               resolve(result);
             }
           })
           .catch(error => {
-            debug(`#getDownloadUrlForProject : Error : ${error}`);
+            debug(`#getArchivePath : Error : ${error}`);
             reject(error);
           });
     });
@@ -107,18 +107,18 @@ export default class RequestService {
       const BASE_URL = 'https://lokalise.co/';
       const projectKeyId: string = form.id;
 
-      debug(`#downloadZip : Downloading url for ${projectKeyId}`);
-      this.getDownloadUrlForProject(...downloadParams).then(lokaliseResponse => {
+      debug(`#downloadZip : Getting archive url for ${projectKeyId}`);
+      this.getArchivePath(...downloadParams).then(lokaliseResponse => {
         const filePath = lokaliseResponse.bundle.file;
         const tempFileName: string = `${new Date().getTime()}-${projectKeyId}.zip`;
         const fileUrl = `${BASE_URL}${filePath}`;
 
-        this.downloadFile(fileUrl)
-            .then(body => {
-              FileSystemService.saveFile(tempFileName, body, projectKeyId)
-                  .then(result => resolve(result))
-                  .catch(err => reject(err));
-            }).catch(err => reject(err));
+        this.downloadFile(fileUrl).then(body => {
+          FileSystemService.saveFile(tempFileName, body, projectKeyId)
+              .then(result => resolve(result))
+              .catch(err => reject(err));
+
+        }).catch(err => reject(err));
       }).catch(err => reject(err));
     });
   }

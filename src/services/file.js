@@ -57,7 +57,7 @@ export default class FileSystemService {
    * @returns {*}
    */
   static pathExists(path) {
-    debug('#pathExists : Checking path exists');
+    debug(`#pathExists : Checking path exists ${BASE_DIR}/${path}`);
     return fs.existsSync(`${BASE_DIR}/${path}`);
   }
 
@@ -68,14 +68,16 @@ export default class FileSystemService {
    * @param projectKeyId
    */
   static unzipIntoFs(file: string, projectKeyId: string) {
-    debug(`#unzipIntoFs : Unzipping ${file} for project ${projectKeyId}`);
+    return new Promise((resolve, reject) => {
+      debug(`#unzipIntoFs : Unzipping ${file} for project ${projectKeyId}`);
 
-    extract(file, { dir: `${projectKeyId}`}, function(err) {
-      if (err) throw err;
+      extract(file, { dir: `${BASE_DIR}/${projectKeyId}`}, function(err) {
+        if (err) reject(err);
 
-      debug('#unzipIntoFs : File unzipped, removing from FS ....');
-
-      FileSystemService.removeFile(file);
+        debug('#unzipIntoFs : File unzipped, removing from FS ....');
+        FileSystemService.removeFile(file);
+        resolve();
+      });
     });
   }
 
@@ -102,10 +104,42 @@ export default class FileSystemService {
 
         debug('#saveZipFile : Writing .zip into filesystem');
 
-        FileSystemService.unzipIntoFs(fileName, projectKeyId);
-
-        resolve();
+        FileSystemService.unzipIntoFs(fileName, projectKeyId)
+            .then(() => resolve())
+            .catch((err) => reject(err));
       });
+    });
+  }
+
+
+  /**
+   * Retrive translations for one or multiple language
+   * in a directory.
+   * @param lang
+   * @param projectName
+   * @param format
+   * @returns {Promise}
+   */
+  static readFiles(lang?: string, projectName: string, format: string) {
+    return new Promise((resolve, reject) => {
+      debug(`#readFiles : Retrieving translations files for ${lang} at ${projectName} in ${format}`);
+      if (!lang) {
+        // Reading all from FS
+        FileSystemService.readJsonFiles(projectName).then(result => resolve(result)).catch(r => reject(r));
+        return;
+      }
+      const langFile = `${projectName}/${lang}.${format}`;
+
+      if (FileSystemService.pathExists(langFile)) {
+        FileSystemService.readJsonFile(langFile).then(result => resolve(result)).catch(r => reject(r));
+      } else {
+        debug(`#readFiles : ${langFile} doesn't exists`);
+
+        reject({
+          code: 'nil_translation',
+          message: 'Translation requested doesnt exists'
+        });
+      }
     });
   }
 }
