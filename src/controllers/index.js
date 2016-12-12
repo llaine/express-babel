@@ -10,7 +10,7 @@ import LokaliseService, { ProjectParams } from '../services/lokalise';
 export function index(req: any, res: any) {
   const params: ProjectParams = {
     project: req.swagger.params.project.value,
-    lang: req.swagger.params.lang.value,
+    lang: req.swagger.params.lang.value || 'en',
     format: req.swagger.params.format.value || 'json',
     reload: req.swagger.params.reload.value
   };

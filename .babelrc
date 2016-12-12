@@ -2,5 +2,9 @@
   "presets": [
     "latest"
   ],
-  "plugins": ["transform-flow-strip-types", "transform-object-rest-spread"]
+  "plugins": [
+    "transform-flow-strip-types",
+    "transform-object-rest-spread",
+    "transform-async-to-generator"
+  ]
 }

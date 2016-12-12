@@ -12,6 +12,7 @@ export type ProjectParams = {
   reload: boolean
 };
 
+
 /**
  * Lokalise service.
  * This class convers all of the function of lokalise.
@@ -24,7 +25,8 @@ export default class LokaliseService {
     this.requestService = new RequestService(this.token);
     this.responses = {
       path_doesnt_exists: {
-        code: 'nil_folder'
+        code: 'nil_folder',
+        message: 'Translation requested doesnt exists'
       }
     };
   }
@@ -69,20 +71,20 @@ export default class LokaliseService {
    * Retrive translations for one or multiple language
    * in a directory.
    * @param lang
-   * @param projectName
+   * @param projectDir
    * @param format
    * @returns {Promise}
    */
-  retrieveTranslationsFiles(lang?: string, projectName: string, format: string) {
+  retrieveTranslationsFiles(lang?: string, projectDir: string, format: string) {
     return new Promise((resolve, reject) => {
-      debug(`#retrieveTranslationsFiles : Retrieving translations files for ${lang} at ${projectName} in ${format}`);
+      debug(`#retrieveTranslationsFiles : Retrieving translations files for ${lang} at ${projectDir} in ${format}`);
       if (!lang) {
         // Reading all from FS
-        FileSystemService.readJsonFiles(projectName).then(result => resolve(result)).catch(r => reject(r));
+        FileSystemService.readJsonFiles(projectDir).then(result => resolve(result)).catch(r => reject(r));
         return;
       }
 
-      const langFile = `${lang}.${format}`;
+      const langFile = `${projectDir}/${lang}.${format}`;
 
       if (FileSystemService.pathExists(langFile)) {
         FileSystemService.readJsonFile(langFile).then(result => resolve(result)).catch(r => reject(r));

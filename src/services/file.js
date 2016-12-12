@@ -3,7 +3,7 @@ import extract from 'extract-zip';
 import { debug } from './logger';
 
 
-const BASE_DIR = '/tmp/dooku/';
+const BASE_DIR = '/tmp/dooku';
 
 export default class FileSystemService {
   /**
@@ -70,7 +70,7 @@ export default class FileSystemService {
   static unzipIntoFs(file: string, projectKeyId: string) {
     debug(`#unzipIntoFs : Unzipping ${file} for project ${projectKeyId}`);
 
-    extract(file, { dir: `${BASE_DIR}/${projectKeyId}`}, function(err) {
+    extract(file, { dir: `${projectKeyId}`}, function(err) {
       if (err) throw err;
 
       debug('#unzipIntoFs : File unzipped, removing from FS ....');
@@ -85,7 +85,7 @@ export default class FileSystemService {
    */
   static removeFile(file) {
     debug(`#removeFile : Removing ${file} from the filesystem`);
-    fs.unlinkSync(`${BASE_DIR}/${file}`);
+    fs.unlinkSync(`${file}`);
   }
 
   /**
