@@ -1,11 +1,9 @@
 // @flow
 
-import LokaliseService from '../services/lokalise';
-
-import { ProjectParams } from '../services/lokalise';
+import LokaliseService, { ProjectParams } from '../services/lokalise';
 
 /**
- * Index route
+ * Index controller for / route
  * @param req
  * @param res
  */
@@ -13,7 +11,7 @@ export function index(req: any, res: any) {
   const params: ProjectParams = {
     project: req.swagger.params.project.value,
     lang: req.swagger.params.lang.value,
-    format: req.swagger.params.format.value,
+    format: req.swagger.params.format.value || 'json',
     reload: req.swagger.params.reload.value
   };
 

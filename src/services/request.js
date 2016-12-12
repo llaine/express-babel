@@ -2,9 +2,13 @@
 'use strict';
 
 import request from 'request';
-import fs from 'fs';
-import { unzipIntoFs } from './zip';
 
+import FileSystemService from './file';
+import { debug } from '../services/logger';
+
+/**
+ * Wrapper for lokalise request api
+ */
 export default class RequestService {
   apiToken: string;
 
@@ -12,6 +16,11 @@ export default class RequestService {
     this.apiToken = apiToken;
   }
 
+  /**
+   * Do a get request appending the lokalise ApiToken
+   * @param url
+   * @returns {Promise}
+   */
   get(url: string) {
     return new Promise((resolve, reject) => {
       const qs = {
@@ -24,6 +33,12 @@ export default class RequestService {
     });
   }
 
+  /**
+   * Do a POST request with the lokalise apiToken and the form parameters.
+   * @param url
+   * @param form
+   * @returns {Promise}
+   */
   post(url: string, form: any) {
     return new Promise((resolve, reject) => {
       const formData = {
@@ -38,33 +53,72 @@ export default class RequestService {
     });
   }
 
+  /**
+   * get the export URL for exporting a lokalise project.
+   * @param url
+   * @param form
+   * @returns {Promise}
+   */
   getDownloadUrlForProject(url: string, form: any) {
     return new Promise((resolve, reject) => {
-      this.post(url, form).then(result => resolve(result)).catch(error => reject(error));
+      debug(`#getDownloadUrlForProject : Downloading ${url} with params ${JSON.stringify(form)}`);
+
+      this.post(url, form)
+          .then(result => {
+            if (result.response.status === 'error') {
+              reject(result);
+            } else {
+              debug(`#getDownloadUrlForProject : Url : ${JSON.stringify(result)}`);
+              resolve(result);
+            }
+          })
+          .catch(error => {
+            debug(`#getDownloadUrlForProject : Error : ${error}`);
+            reject(error);
+          });
     });
   }
 
-  downloadZip(url: string, form: any) {
+  /**
+   * Download file and return the body in the promise
+   * @param url
+   * @returns {Promise}
+   */
+  downloadFile(url: string) {
+    return new Promise((resolve, reject) => {
+      debug(`#downloadZipFile : Downloading now ${url}`);
+      request({ url: url, encoding: null}, function(error, resp, body) {
+        if (error) reject(error)
+        debug('#downloadZipFile : Download completed');
+        resolve(body);
+      });
+    });
+  }
+
+  /**
+   * Download the zip
+   * @param url
+   * @param form
+   * @returns {Promise}
+   */
+  processZipFile(url: string, form: any) {
     const downloadParams = arguments;
     return new Promise((resolve, reject) => {
-      console.log('Downloading ZIP')
       const BASE_URL = 'https://lokalise.co/';
       const projectKeyId: string = form.id;
 
-
-      this.getDownloadUrlForProject(...downloadParams).then(result => {
-        const filePath = result.bundle.file;
+      debug(`#downloadZip : Downloading url for ${projectKeyId}`);
+      this.getDownloadUrlForProject(...downloadParams).then(lokaliseResponse => {
+        const filePath = lokaliseResponse.bundle.file;
         const tempFileName: string = `${new Date().getTime()}-${projectKeyId}.zip`;
         const fileUrl = `${BASE_URL}${filePath}`;
 
-        request({ url: fileUrl, encoding: null}, function(err, resp, body) {
-          if (err) reject(err);
-          fs.writeFile(tempFileName, body, function(error) {
-            if (error) reject(error);
-            unzipIntoFs(tempFileName, projectKeyId);
-            resolve();
-          });
-        });
+        this.downloadFile(fileUrl)
+            .then(body => {
+              FileSystemService.saveZipFile(tempFileName, body, projectKeyId)
+                  .then(result => resolve(result))
+                  .catch(err => reject(err));
+            }).catch(err => reject(err));
       }).catch(err => reject(err));
     });
   }

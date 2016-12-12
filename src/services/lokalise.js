@@ -1,10 +1,12 @@
 
 import FileSystemService from './file';
 import RequestService from './request';
+import { debug } from '../services/logger';
+
 
 import lokaliseConfig from '../config/lokalise.json';
 
-import { BASE_DIR } from './zip';
+import { BASE_DIR } from './file';
 
 export type ProjectParams = {
   lang: string ;
@@ -37,6 +39,7 @@ export default class LokaliseService {
    * @returns {Promise}
    */
   getProjects() {
+    debug('#getProjects');
     return new Promise((resolve, reject) => {
       new RequestService(this.token)
           .get(lokaliseConfig.resources.projects)
@@ -56,10 +59,14 @@ export default class LokaliseService {
       const projectDirectory: string = `${this.BASE_DIR}${params.project}/`;
 
       if (FileSystemService.pathExists(projectDirectory)) {
-        this.retrieveTranslationsFiles(params.lang, projectDirectory)
+        debug(`#getTranslationFromFS : get translations from filesystem with : ${JSON.stringify(params)}`);
+
+        this.retrieveTranslationsFiles(params.lang, projectDirectory, params.format)
             .then(result => resolve(result))
             .catch(err => reject(err));
       } else {
+        debug(`#getTranslationFromFS : project directory ${projectDirectory} doesnt exists`);
+
         reject(this.responses.path_doesnt_exists);
       }
     });
@@ -70,23 +77,25 @@ export default class LokaliseService {
    * in a directory.
    * @param lang
    * @param projectDir
+   * @param format
    * @returns {Promise}
    */
-  retrieveTranslationsFiles(lang?: string, projectDir: string) {
+  retrieveTranslationsFiles(lang?: string, projectDir: string, format: string) {
     return new Promise((resolve, reject) => {
-      if (lang) {
-        const langFile = `${projectDir}${lang}.json`;
-        if (FileSystemService.pathExists(langFile)) {
-          FileSystemService.readJsonFile(langFile)
-              .then(result => resolve(result))
-              .catch(r => reject(r));
-        } else {
-          reject(this.responses.path_doesnt_exists);
-        }
+      debug(`#retrieveTranslationsFiles : Retrieving translations files for ${lang} at ${projectDir} in ${format}`);
+      if (!lang) {
+        // Reading all from FS
+        FileSystemService.readJsonFiles(projectDir).then(result => resolve(result)).catch(r => reject(r));
+        return;
+      }
+
+      const langFile = `${projectDir}${lang}.${format}`;
+
+      if (FileSystemService.pathExists(langFile)) {
+        FileSystemService.readJsonFile(langFile).then(result => resolve(result)).catch(r => reject(r));
       } else {
-        FileSystemService.readJsonFiles(projectDir)
-            .then(result => resolve(result))
-            .catch(r => reject(r));
+        debug(`#retrieveTranslationsFiles : ${langFile} doesn't exists`);
+        reject(this.responses.path_doesnt_exists);
       }
     });
   }
@@ -99,9 +108,12 @@ export default class LokaliseService {
    */
   getTranslationFromApi(params: ProjectParams) {
     return new Promise((resolve, reject) => {
+      debug(`#getTranslationFromApi : Getting translations for ${params.project} with type ${params.format}`);
       this.requestService
-          .downloadZip(lokaliseConfig.resources.download, { id: params.project, type: 'json' })
+          .processZipFile(lokaliseConfig.resources.download, { id: params.project, type: params.format })
           .then(() => {
+            debug('#getTranslationFromApi : Downloading ZIP finished');
+            // Once we downloaded the zip, we can read it from the file system.
             this.getTranslationFromFS(params)
                 .then(result => resolve(result))
                 .catch(err => reject(err));
@@ -118,6 +130,7 @@ export default class LokaliseService {
    */
   getTranslation(params: ProjectParams): Promise {
     return new Promise((resolve, reject) => {
+      debug('#getTranslation : Getting translations for project');
       this.getTranslationsForProject(params)
           .then(result => resolve(result))
           .catch(error => reject(error));
@@ -132,11 +145,15 @@ export default class LokaliseService {
    */
   getTranslationsForProject(params: ProjectParams) {
     return new Promise((resolve, reject) => {
+      debug('#getTranslationsForProject : Getting translations for project');
+
       this.getTranslationFromFS(params)
         .then(result => resolve(result))
         .catch(error => {
           // This project doesnt exists we have to fetch from the API
           if (error.code === 'nil_folder') {
+            debug('#getTranslationsForProject : Translations doesnt exists, fetching from api ...');
+
             this.getTranslationFromApi(params)
                 .then(result => resolve(result))
                 .catch(err => reject(err));
