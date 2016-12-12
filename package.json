@@ -55,7 +55,7 @@
     "clean": "rm -rf build",
     "copy-folders": "mkdir build/swagger build/config ; cp -R src/swagger/* build/swagger/ ; cp -R src/config/* build/config",
     "build": "NODE_ENV=production npm run clean && babel src -s -d build && npm run copy-folders",
-    "serve": "NODE_ENV=production node build/server.js"
+    "serve": "NODE_ENV=production node --optimize_for_size --max_old_space_size=920 --gc_interval=100 build/server.js"
   },
   "pre-commit": {
     "run": [
