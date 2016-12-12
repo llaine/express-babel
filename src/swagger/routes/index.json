@@ -15,7 +15,7 @@
         "name": "project",
         "in": "query",
         "description": "Project wanted",
-        "required": false,
+        "required": true,
         "type": "string"
       },
       {

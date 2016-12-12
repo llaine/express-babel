@@ -3,10 +3,7 @@ import FileSystemService from './file';
 import RequestService from './request';
 import { debug } from '../services/logger';
 
-
 import lokaliseConfig from '../config/lokalise.json';
-
-import { BASE_DIR } from './file';
 
 export type ProjectParams = {
   lang: string ;
@@ -14,7 +11,6 @@ export type ProjectParams = {
   format: string,
   reload: boolean
 };
-
 
 /**
  * Lokalise service.
@@ -24,7 +20,6 @@ export type ProjectParams = {
  */
 export default class LokaliseService {
   constructor() {
-    this.BASE_DIR = BASE_DIR;
     this.token = lokaliseConfig.credentials['api-key'];
     this.requestService = new RequestService(this.token);
     this.responses = {
@@ -56,16 +51,14 @@ export default class LokaliseService {
    */
   getTranslationFromFS(params: ProjectParams) {
     return new Promise((resolve, reject) => {
-      const projectDirectory: string = `${this.BASE_DIR}${params.project}/`;
-
-      if (FileSystemService.pathExists(projectDirectory)) {
+      if (FileSystemService.pathExists(params.project)) {
         debug(`#getTranslationFromFS : get translations from filesystem with : ${JSON.stringify(params)}`);
 
-        this.retrieveTranslationsFiles(params.lang, projectDirectory, params.format)
+        this.retrieveTranslationsFiles(params.lang, params.project, params.format)
             .then(result => resolve(result))
             .catch(err => reject(err));
       } else {
-        debug(`#getTranslationFromFS : project directory ${projectDirectory} doesnt exists`);
+        debug(`#getTranslationFromFS : project directory ${params.project} doesnt exists`);
 
         reject(this.responses.path_doesnt_exists);
       }
@@ -76,20 +69,20 @@ export default class LokaliseService {
    * Retrive translations for one or multiple language
    * in a directory.
    * @param lang
-   * @param projectDir
+   * @param projectName
    * @param format
    * @returns {Promise}
    */
-  retrieveTranslationsFiles(lang?: string, projectDir: string, format: string) {
+  retrieveTranslationsFiles(lang?: string, projectName: string, format: string) {
     return new Promise((resolve, reject) => {
-      debug(`#retrieveTranslationsFiles : Retrieving translations files for ${lang} at ${projectDir} in ${format}`);
+      debug(`#retrieveTranslationsFiles : Retrieving translations files for ${lang} at ${projectName} in ${format}`);
       if (!lang) {
         // Reading all from FS
-        FileSystemService.readJsonFiles(projectDir).then(result => resolve(result)).catch(r => reject(r));
+        FileSystemService.readJsonFiles(projectName).then(result => resolve(result)).catch(r => reject(r));
         return;
       }
 
-      const langFile = `${projectDir}${lang}.${format}`;
+      const langFile = `${lang}.${format}`;
 
       if (FileSystemService.pathExists(langFile)) {
         FileSystemService.readJsonFile(langFile).then(result => resolve(result)).catch(r => reject(r));

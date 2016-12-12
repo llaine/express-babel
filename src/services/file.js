@@ -1,8 +1,9 @@
 import fs from 'fs';
 import extract from 'extract-zip';
 import { debug } from './logger';
-export const BASE_DIR = '/tmp/dooku/';
 
+
+const BASE_DIR = '/tmp/dooku/';
 
 export default class FileSystemService {
   /**
@@ -12,11 +13,13 @@ export default class FileSystemService {
    */
   static readJsonFile(file) {
     return new Promise((resolve, reject) => {
-      fs.readFile(file, 'utf8', function(err, data) {
+      const fileName = `${BASE_DIR}/${file}`;
+      fs.readFile(fileName, 'utf8', function(err, data) {
         if (err) {
           reject(err);
-        }
-        else {
+        } else {
+          debug(`#readJsonFile : Reading JSON file ${fileName}`);
+
           resolve(JSON.parse(data));
         }
       });
@@ -25,16 +28,20 @@ export default class FileSystemService {
 
   /**
    * Read multiple files from a directory and return all in one object.
-   * @param directory
+   * @param projectName
    * @returns {Promise}
    */
-  static readJsonFiles(directory) {
+  static readJsonFiles(projectName) {
     return new Promise((resolve, reject) => {
-      fs.readdir(directory, (err, files) => {
+      const directoryName = `${BASE_DIR}/${projectName}`;
+      fs.readdir(directoryName, (err, files) => {
         if (err) {
           reject(err);
         } else {
-          const filesPromises = files.map(filename => FileSystemService.readJsonFile(`${directory}${filename}`));
+          const filesPromises = files.map(filename => FileSystemService.readJsonFile(`${projectName}${filename}`));
+
+          debug(`#readJsonFiles : Reading multilple JSON file in ${directoryName}`);
+
           Promise
             .all(filesPromises)
             .then(result => resolve(result))
@@ -44,10 +51,22 @@ export default class FileSystemService {
     });
   }
 
+  /**
+   * Check if path exists on the filesystem
+   * @param path
+   * @returns {*}
+   */
   static pathExists(path) {
-    return fs.existsSync(path);
+    debug('#pathExists : Checking path exists');
+    return fs.existsSync(`${BASE_DIR}/${path}`);
   }
 
+  /**
+   * Unzip the content of file into the filesystem.
+   * Name of the folder is going to be the projectKeyId pass in parameter
+   * @param file
+   * @param projectKeyId
+   */
   static unzipIntoFs(file: string, projectKeyId: string) {
     debug(`#unzipIntoFs : Unzipping ${file} for project ${projectKeyId}`);
 
@@ -60,12 +79,23 @@ export default class FileSystemService {
     });
   }
 
+  /**
+   * Remove a file from the filesystem
+   * @param file
+   */
   static removeFile(file) {
     debug(`#removeFile : Removing ${file} from the filesystem`);
-    fs.unlinkSync(file);
+    fs.unlinkSync(`${BASE_DIR}/${file}`);
   }
 
-  static saveZipFile(fileName: string, body: any, projectKeyId: string) {
+  /**
+   * Write file into the file system.
+   * @param fileName
+   * @param body
+   * @param projectKeyId
+   * @returns {Promise}
+   */
+  static saveFile(fileName: string, body: any, projectKeyId: string) {
     return new Promise((resolve, reject) => {
       fs.writeFile(fileName, body, function(error) {
         if (error) reject(error);

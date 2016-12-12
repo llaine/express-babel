@@ -115,7 +115,7 @@ export default class RequestService {
 
         this.downloadFile(fileUrl)
             .then(body => {
-              FileSystemService.saveZipFile(tempFileName, body, projectKeyId)
+              FileSystemService.saveFile(tempFileName, body, projectKeyId)
                   .then(result => resolve(result))
                   .catch(err => reject(err));
             }).catch(err => reject(err));
