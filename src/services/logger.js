@@ -36,8 +36,7 @@ const formatDate = (d) => {
 export default function() {
   if (typeof arguments[0] === 'string') {
     arguments[0] = '[' + formatDate(new Date()) + '] ' + arguments[0];
-  }
-  else {
+  } else {
     /* Assume the parameter is a request */
     arguments[0] = '[' + formatDate(new Date()) + ' from ' + arguments[0].connection.remoteAddress + '] ' + arguments[1];
     arguments[1] = '';

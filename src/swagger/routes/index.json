@@ -24,6 +24,13 @@
         "description": "Lang of the i18n",
         "required": false,
         "type": "string"
+      },
+      {
+        "name": "reload",
+        "in": "query",
+        "description": "Explicitly tell the service to fetch from the API",
+        "required": false,
+        "type": "boolean"
       }
     ],
     "responses": {
