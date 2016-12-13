@@ -5,24 +5,32 @@ import fs from 'fs';
 import extract from 'extract-zip';
 import { debug } from './logger';
 
-import { promisify } from '../utils';
+import { promisify } from './utils';
+
+import * as errors from './error';
 
 const BASE_DIR = '/tmp/dooku';
+const EXISTING_FORMATS = ['po', 'xls', 'strings', 'xliff', 'xml', 'json', 'php', 'yml', 'properties', 'ini'];
 
 const readdirPromise = promisify(fs.readdir);
 const extractPromise = promisify(extract);
 const writeFilePromise = promisify(fs.writeFile);
+const readfilePromise = promisify(fs.readFile)
 
 export default class FileSystemService {
   /**
    * Read multiple files from a directory and return all in one object.
    * @param projectName
+   * @param format
    * @returns {Promise}
    */
-  static readJsonFiles(projectName) {
+  static readMultipleFiles(projectName: string, format: string) {
     const directoryName: string = `${BASE_DIR}/${projectName}`;
-    debug(`#readJsonFiles : Reading multilple JSON file in ${directoryName}`);
-    return readdirPromise(directoryName).then(files => Promise.all(files.map(filename => require(`${directoryName}/${filename}`))));
+    debug(`#readJsonFiles : Reading multilple ${format} file in ${directoryName}`);
+    return readdirPromise(directoryName)
+        .then(files =>
+            Promise.all(files.map(filename =>
+                FileSystemService._readFileWithFormat(`${directoryName}/${filename}`, format))));
   }
 
   /**
@@ -68,6 +76,15 @@ export default class FileSystemService {
   }
 
   /**
+   * Check if a directory is empty
+   * @param directory
+   * @returns {Request|Promise.<boolean>|*}
+   */
+  static isDirectoryEmpty(directory: string): boolean {
+    return readdirPromise(directory).then(files => files.length === 0);
+  }
+
+  /**
    * Retrive translations for one or multiple language
    * in a directory.
    * @param lang
@@ -75,25 +92,42 @@ export default class FileSystemService {
    * @param format
    * @returns {Promise}
    */
-  static readFiles(lang?: string, projectName: string, format: string) {
-    debug(`#readFiles : Retrieving translations files for ${lang} at ${projectName} in ${format}`);
-    if (!lang) {
-      // Reading all from FS
-      return FileSystemService.readJsonFiles(projectName);
+  static translations(lang?: string, projectName: string, format: string) {
+    debug(`#readFiles : Retrieving translations files for ${lang ? lang : ''} at ${projectName} in ${format}`);
+    if (!lang) return FileSystemService.readMultipleFiles(projectName, format);
+
+    const translationsFile = `${projectName}/${lang}.${format}`;
+
+    if (!EXISTING_FORMATS.includes(format)) {
+      debug(`#readFiles : ${format} doesn't exists`);
+      return Promise.reject(errors.undefinedFormat());
     }
 
-    const langFile = `${projectName}/${lang}.${format}`;
-
-    if (!FileSystemService.pathExists(langFile)) {
-      debug(`#readFiles : ${langFile} doesn't exists`);
-
-      return Promise.reject({
-        code: 'nil_translation',
-        message: 'Translation requested doesnt exists'
-      });
+    if (!FileSystemService.pathExists(translationsFile)) {
+      debug(`#readFiles : ${translationsFile} doesn't exists`);
+      return Promise.reject(errors.nilTranslationError());
     }
 
-    const fullPathToFile: string = `${BASE_DIR}/${langFile}`;
-    return Promise.resolve(require(fullPathToFile));
+    const fullPathToFile: string = `${BASE_DIR}/${translationsFile}`;
+    return Promise.resolve(FileSystemService._readFileWithFormat(fullPathToFile, format));
+  }
+
+  /**
+   * Read a file within his format.
+   * If we have JSON, return JSON file.
+   * @param file
+   * @param format
+   * @returns {Request|Promise.<TResult>|*}
+   * @private
+   */
+  static _readFileWithFormat(file: string, format: string) {
+    return readfilePromise(file, 'utf8')
+        .then(result => {
+          if (format === 'json') {
+            return JSON.parse(result);
+          }
+
+          return result;
+        });
   }
 }

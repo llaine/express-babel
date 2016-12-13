@@ -1,6 +1,8 @@
 // @flow
 
-import LokaliseService, { ProjectParams } from '../services/lokalise';
+import LokaliseService from '../services/lokalise';
+
+import type { ProjectParams } from '../services/lokalise';
 
 /**
  * Index controller for / route

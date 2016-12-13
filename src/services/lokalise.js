@@ -3,7 +3,8 @@
 
 import FileSystemService from './file';
 import RequestService from './request';
-import {debug} from '../services/logger';
+import { debug } from '../services/logger';
+import * as errors from './error';
 
 import lokaliseConfig from '../config/lokalise.json';
 
@@ -23,21 +24,10 @@ export type ProjectParams = {
 class LokaliseService {
   token: string;
   requestService: Object;
-  responses: Object;
 
   constructor() {
     this.token = lokaliseConfig.credentials['api-key'];
     this.requestService = new RequestService(this.token);
-    this.responses = {
-      folder_is_nil: {
-        code: 'nil_folder',
-        message: 'Project doesnt exists'
-      },
-      translation_is_nil: {
-        code: 'nil_translation',
-        message: 'Translation requested doesnt exists'
-      }
-    };
   }
 
   /**
@@ -58,11 +48,11 @@ class LokaliseService {
   getTranslationFromFS(params: ProjectParams) {
     if (!FileSystemService.pathExists(params.project)) {
       debug(`#getTranslationFromFS : project directory ${params.project} doesnt exists`);
-      return Promise.reject(this.responses.folder_is_nil);
+      return Promise.reject(errors.nilFolderError());
     }
 
     debug(`#getTranslationFromFS : get translations from filesystem with : ${JSON.stringify(params)}`);
-    return FileSystemService.readFiles(params.lang, params.project, params.format);
+    return FileSystemService.translations(params.lang, params.project, params.format);
   }
 
   /**
@@ -91,7 +81,7 @@ class LokaliseService {
     debug('#getTranslationsForProject : Getting translations for project');
     return this.getTranslationFromFS(params)
       .catch(error => {
-        if (error.code === 'nil_folder') {
+        if (error.code === 'nil_folder' || error.code === 'nil_translation') {
           return this.getTranslationFromApi(params);
         }
 
