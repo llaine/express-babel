@@ -37,7 +37,8 @@ export default class RequestService {
   post(url: string, form: any) {
     const formData = {
       ...form,
-      api_token: this.apiToken
+      api_token: this.apiToken,
+      export_all: 1
     };
 
     return request.post({url, form: formData, json: true});
