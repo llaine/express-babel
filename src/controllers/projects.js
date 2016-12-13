@@ -8,8 +8,9 @@ import LokaliseService from '../services/lokalise';
  * @param request
  * @param response
  */
-export function index(request: any, response: any) {
-  const l = new LokaliseService();
-  l.getProjects().then(projects => response.send(projects));
+export function index(request: any, response: any, next: any) {
+  LokaliseService.getProjects()
+      .then(projects => response.send(projects))
+      .catch(next);
 }
 

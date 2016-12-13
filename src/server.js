@@ -21,7 +21,6 @@ const controllersOpts = {
 const app = express();
 
 // Middleware for express
-app.use(ErrorMiddleware);
 app.use(LoggerMiddleware);
 
 // Swagger conf
@@ -33,7 +32,8 @@ JsonRefs.resolveRefs(SwaggerDoc)
         app.use(Middlerwares.swaggerValidator());
         app.use(Middlerwares.swaggerUi());
         app.use(Middlerwares.swaggerRouter(controllersOpts));
+        app.use(ErrorMiddleware);
+        app.listen(PORT, () => console.log(`Listenning to ${PORT}`));
       });
     });
 
-app.listen(PORT, () => console.log(`Listenning to ${PORT}`));

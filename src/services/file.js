@@ -2,53 +2,24 @@ import fs from 'fs';
 import extract from 'extract-zip';
 import { debug } from './logger';
 
+import { promisify } from '../utils';
 
 const BASE_DIR = '/tmp/dooku';
 
+const readdirPromise = promisify(fs.readdir);
+const extractPromise = promisify(extract);
+const writeFilePromise = promisify(fs.writeFile);
+
 export default class FileSystemService {
-  /**
-   * Read a file and return the result as JSON object
-   * @param file
-   * @returns {Promise}
-   */
-  static readJsonFile(file) {
-    return new Promise((resolve, reject) => {
-      const fileName = `${BASE_DIR}/${file}`;
-      fs.readFile(fileName, 'utf8', function(err, data) {
-        if (err) {
-          reject(err);
-        } else {
-          debug(`#readJsonFile : Reading JSON file ${fileName}`);
-
-          resolve(JSON.parse(data));
-        }
-      });
-    });
-  }
-
   /**
    * Read multiple files from a directory and return all in one object.
    * @param projectName
    * @returns {Promise}
    */
   static readJsonFiles(projectName) {
-    return new Promise((resolve, reject) => {
-      const directoryName = `${BASE_DIR}/${projectName}`;
-      fs.readdir(directoryName, (err, files) => {
-        if (err) {
-          reject(err);
-        } else {
-          const filesPromises = files.map(filename => FileSystemService.readJsonFile(`${projectName}${filename}`));
-
-          debug(`#readJsonFiles : Reading multilple JSON file in ${directoryName}`);
-
-          Promise
-            .all(filesPromises)
-            .then(result => resolve(result))
-            .catch(error => reject(error));
-        }
-      });
-    });
+    const directoryName = `${BASE_DIR}/${projectName}`;
+    debug(`#readJsonFiles : Reading multilple JSON file in ${directoryName}`);
+    return readdirPromise(directoryName).then(files => Promise.all(files.map(filename => require(`${directoryName}/${filename}`))));
   }
 
   /**
@@ -68,17 +39,8 @@ export default class FileSystemService {
    * @param projectKeyId
    */
   static unzipIntoFs(file: string, projectKeyId: string) {
-    return new Promise((resolve, reject) => {
-      debug(`#unzipIntoFs : Unzipping ${file} for project ${projectKeyId}`);
-
-      extract(file, { dir: `${BASE_DIR}/${projectKeyId}`}, function(err) {
-        if (err) reject(err);
-
-        debug('#unzipIntoFs : File unzipped, removing from FS ....');
-        FileSystemService.removeFile(file);
-        resolve();
-      });
-    });
+    debug(`#unzipIntoFs : Unzipping ${file} for project ${projectKeyId}`);
+    return extractPromise(file, { dir: `${BASE_DIR}/${projectKeyId}`}).then(() => FileSystemService.removeFile(file));
   }
 
   /**
@@ -98,19 +60,9 @@ export default class FileSystemService {
    * @returns {Promise}
    */
   static saveFile(fileName: string, body: any, projectKeyId: string) {
-    return new Promise((resolve, reject) => {
-      fs.writeFile(fileName, body, function(error) {
-        if (error) reject(error);
-
-        debug('#saveZipFile : Writing .zip into filesystem');
-
-        FileSystemService.unzipIntoFs(fileName, projectKeyId)
-            .then(() => resolve())
-            .catch((err) => reject(err));
-      });
-    });
+    debug('#saveZipFile : Writing .zip into filesystem');
+    return writeFilePromise(fileName, body).then(() => FileSystemService.unzipIntoFs(fileName, projectKeyId));
   }
-
 
   /**
    * Retrive translations for one or multiple language
@@ -121,25 +73,24 @@ export default class FileSystemService {
    * @returns {Promise}
    */
   static readFiles(lang?: string, projectName: string, format: string) {
-    return new Promise((resolve, reject) => {
-      debug(`#readFiles : Retrieving translations files for ${lang} at ${projectName} in ${format}`);
-      if (!lang) {
-        // Reading all from FS
-        FileSystemService.readJsonFiles(projectName).then(result => resolve(result)).catch(r => reject(r));
-        return;
-      }
-      const langFile = `${projectName}/${lang}.${format}`;
+    debug(`#readFiles : Retrieving translations files for ${lang} at ${projectName} in ${format}`);
+    if (!lang) {
+      // Reading all from FS
+      return FileSystemService.readJsonFiles(projectName);
+    }
 
-      if (FileSystemService.pathExists(langFile)) {
-        FileSystemService.readJsonFile(langFile).then(result => resolve(result)).catch(r => reject(r));
-      } else {
-        debug(`#readFiles : ${langFile} doesn't exists`);
+    const langFile = `${projectName}/${lang}.${format}`;
 
-        reject({
-          code: 'nil_translation',
-          message: 'Translation requested doesnt exists'
-        });
-      }
-    });
+    if (!FileSystemService.pathExists(langFile)) {
+      debug(`#readFiles : ${langFile} doesn't exists`);
+
+      return Promise.reject({
+        code: 'nil_translation',
+        message: 'Translation requested doesnt exists'
+      });
+    }
+
+    const fullPathToFile = `${BASE_DIR}/${langFile}`;
+    return Promise.resolve(require(fullPathToFile));
   }
 }

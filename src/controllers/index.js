@@ -7,23 +7,21 @@ import LokaliseService, { ProjectParams } from '../services/lokalise';
  * @param req
  * @param res
  */
-export function index(req: any, res: any) {
+export function index(req: any, res: any, next: any) {
   const params: ProjectParams = {
     project: req.swagger.params.project.value,
-    lang: req.swagger.params.lang.value || 'en',
+    lang: req.swagger.params.lang.value,
     format: req.swagger.params.format.value || 'json',
     reload: req.swagger.params.reload.value
   };
 
-  const lokalise = new LokaliseService();
-
-  if (params.reload) {
-    lokalise.getTranslationFromApi(params)
-        .then(result => res.send(result))
-        .catch(err => res.send(err));
-  } else {
-    lokalise.getTranslations(params)
-        .then(result => res.send(result))
-        .catch(err => res.send(err));
-  }
+  Promise.resolve()
+    .then(() => {
+      if (params.reload) {
+        return LokaliseService.getTranslationFromApi(params);
+      }
+      return LokaliseService.getTranslations(params);
+    })
+    .then(response => res.send(response))
+    .catch(next);
 }

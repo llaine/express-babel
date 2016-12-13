@@ -11,20 +11,20 @@ export type ProjectParams = {
   reload: boolean
 };
 
-
 /**
  * Lokalise service.
  * This class convers all of the function of lokalise.
  * - Listing projects.
  * - Exporting projects
  */
-export default class LokaliseService {
+class LokaliseService {
   constructor() {
     this.token = lokaliseConfig.credentials['api-key'];
     this.requestService = new RequestService(this.token);
     this.responses = {
       folder_is_nil: {
-        code: 'nil_folder'
+        code: 'nil_folder',
+        message: 'Project doesnt exists'
       },
       translation_is_nil: {
         code: 'nil_translation',
@@ -39,11 +39,7 @@ export default class LokaliseService {
    */
   getProjects() {
     debug('#getProjects');
-    return new Promise((resolve, reject) => {
-      this.requestService.get(lokaliseConfig.resources.projects)
-          .then((result) => resolve(result.projects))
-          .catch((err) => reject(err));
-    });
+    return this.requestService.get(lokaliseConfig.resources.projects).then((result) => result.projects);
   }
 
   /**
@@ -53,19 +49,14 @@ export default class LokaliseService {
    * @returns {Promise}
    */
   getTranslationFromFS(params: ProjectParams) {
-    return new Promise((resolve, reject) => {
-      if (FileSystemService.pathExists(params.project)) {
-        debug(`#getTranslationFromFS : get translations from filesystem with : ${JSON.stringify(params)}`);
+    if (!FileSystemService.pathExists(params.project)) {
+      debug(`#getTranslationFromFS : project directory ${params.project} doesnt exists`);
+      return Promise.reject(this.responses.folder_is_nil);
+    }
 
-        FileSystemService.readFiles(params.lang, params.project, params.format)
-            .then(result => resolve(result))
-            .catch(err => reject(err));
-      } else {
-        debug(`#getTranslationFromFS : project directory ${params.project} doesnt exists`);
+    debug(`#getTranslationFromFS : get translations from filesystem with : ${JSON.stringify(params)}`);
 
-        reject(this.responses.folder_is_nil);
-      }
-    });
+    return FileSystemService.readFiles(params.lang, params.project, params.format);
   }
 
   /**
@@ -75,19 +66,14 @@ export default class LokaliseService {
    * @returns {Promise}
    */
   getTranslationFromApi(params: ProjectParams) {
-    return new Promise((resolve, reject) => {
-      debug(`#getTranslationFromApi : Getting translations for ${params.project} with type ${params.format}`);
-      this.requestService
-          .processZipFile(lokaliseConfig.resources.download, {id: params.project, type: params.format})
-          .then(() => {
-            debug('#getTranslationFromApi : Zip file processed ZIP finished');
-            // Once we downloaded the zip, we can read it from the file system.
-            this.getTranslationFromFS(params)
-                .then(result => resolve(result))
-                .catch(err => reject(err));
-          })
-          .catch(error => reject(error));
-    });
+    debug(`#getTranslationFromApi : Getting translations for ${params.project} with type ${params.format}`);
+    return this.requestService
+        .processZipFile(lokaliseConfig.resources.download, {id: params.project, type: params.format})
+        .then(() => {
+          debug('#getTranslationFromApi : Zip file processed ZIP finished');
+          // Once we downloaded the zip, we can read it from the file system.
+          return this.getTranslationFromFS(params);
+        });
   }
 
 
@@ -97,18 +83,17 @@ export default class LokaliseService {
    * @returns {Promise}
    */
   getTranslations(params: ProjectParams): Promise {
-    return new Promise((resolve, reject) => {
-      debug('#getTranslationsForProject : Getting translations for project');
+    debug('#getTranslationsForProject : Getting translations for project');
+    return this.getTranslationFromFS(params)
+      .catch(error => {
+        if (error.code === 'nil_folder') {
+          return this.getTranslationFromApi(params);
+        }
 
-      this.getTranslationFromFS(params)
-          .then(result => resolve(result))
-          .catch(error => {
-            if (error.code === 'nil_folder') {
-              this.getTranslationFromApi(params).then(result => resolve(result)).catch(err => reject(err));
-            } else {
-              reject(error);
-            }
-          });
-    });
+        throw error;
+      });
   }
 }
+
+
+export default new LokaliseService();
