@@ -76,7 +76,6 @@ class LokaliseService {
         });
   }
 
-
   /**
    * Get specific translations for project
    * @param params
@@ -94,6 +93,5 @@ class LokaliseService {
       });
   }
 }
-
 
 export default new LokaliseService();

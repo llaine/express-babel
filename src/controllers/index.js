@@ -6,6 +6,7 @@ import LokaliseService, { ProjectParams } from '../services/lokalise';
  * Index controller for / route
  * @param req
  * @param res
+ * @param next
  */
 export function index(req: any, res: any, next: any) {
   const params: ProjectParams = {
