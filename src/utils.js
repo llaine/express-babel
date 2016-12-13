@@ -10,7 +10,7 @@
  */
 export function promisify(methodName: any) {
   return (...args: any) => {
-    return new Promise((resolve, reject) => {
+    return new Promise((resolve: Function, reject: Function) => {
       methodName(...args, (error, ...result) => {
         if (error) return reject(error);
         return result.length < 2 ? resolve(...result) : resolve(result);

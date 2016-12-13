@@ -1,3 +1,6 @@
+// @flow
+'use strict';
+
 import fs from 'fs';
 import extract from 'extract-zip';
 import { debug } from './logger';
@@ -17,7 +20,7 @@ export default class FileSystemService {
    * @returns {Promise}
    */
   static readJsonFiles(projectName) {
-    const directoryName = `${BASE_DIR}/${projectName}`;
+    const directoryName: string = `${BASE_DIR}/${projectName}`;
     debug(`#readJsonFiles : Reading multilple JSON file in ${directoryName}`);
     return readdirPromise(directoryName).then(files => Promise.all(files.map(filename => require(`${directoryName}/${filename}`))));
   }
@@ -90,7 +93,7 @@ export default class FileSystemService {
       });
     }
 
-    const fullPathToFile = `${BASE_DIR}/${langFile}`;
+    const fullPathToFile: string = `${BASE_DIR}/${langFile}`;
     return Promise.resolve(require(fullPathToFile));
   }
 }

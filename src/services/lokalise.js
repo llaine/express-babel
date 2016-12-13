@@ -1,3 +1,6 @@
+// @flow
+'use strict';
+
 import FileSystemService from './file';
 import RequestService from './request';
 import {debug} from '../services/logger';
@@ -18,6 +21,10 @@ export type ProjectParams = {
  * - Exporting projects
  */
 class LokaliseService {
+  token: string;
+  requestService: Object;
+  responses: Object;
+
   constructor() {
     this.token = lokaliseConfig.credentials['api-key'];
     this.requestService = new RequestService(this.token);
@@ -55,7 +62,6 @@ class LokaliseService {
     }
 
     debug(`#getTranslationFromFS : get translations from filesystem with : ${JSON.stringify(params)}`);
-
     return FileSystemService.readFiles(params.lang, params.project, params.format);
   }
 
@@ -81,7 +87,7 @@ class LokaliseService {
    * @param params
    * @returns {Promise}
    */
-  getTranslations(params: ProjectParams): Promise {
+  getTranslations(params: ProjectParams) {
     debug('#getTranslationsForProject : Getting translations for project');
     return this.getTranslationFromFS(params)
       .catch(error => {
