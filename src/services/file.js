@@ -29,8 +29,10 @@ export default class FileSystemService {
     debug(`#readJsonFiles : Reading multilple ${format} file in ${directoryName}`);
     return readdirPromise(directoryName)
         .then(files =>
-            Promise.all(files.map(filename =>
-                FileSystemService._readFileWithFormat(`${directoryName}/${filename}`, format))));
+            Promise.all(files
+                          .filter(file => file.split('.')[1] === format)
+                          .map(filename => FileSystemService
+                                            ._readFileWithFormat(`${directoryName}/${filename}`, format))));
   }
 
   /**
@@ -121,6 +123,7 @@ export default class FileSystemService {
    * @private
    */
   static _readFileWithFormat(file: string, format: string) {
+    debug(`#_readFileWithFormat: Reading ${file} with ${format}`);
     return readfilePromise(file, 'utf8')
         .then(result => {
           if (format === 'json') {
