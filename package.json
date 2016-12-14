@@ -1,8 +1,8 @@
 {
-  "name": "Dooku",
+  "name": "express-babel",
   "version": "0.0.1",
   "private": true,
-  "description": "Count Dooku",
+  "description": "any",
   "keywords": [],
   "author": "",
   "license": "",
@@ -14,11 +14,9 @@
     "express": "^4.13.4",
     "extract-zip": "^1.5.0",
     "http-status-codes": "^1.0.6",
-    "json-refs": "^2.1.5",
     "request": "^2.74.0",
     "request-promise": "^4.0.2",
     "request-promise-native": "^1.0.3",
-    "swagger-tools": "^0.10.1",
     "unix-timestamp": "^0.2.0"
   },
   "devDependencies": {
@@ -67,8 +65,7 @@
     "unit": "mocha test --recursive --watch --compilers js:babel-register",
     "start": "nodemon src/server.js --exec babel-node",
     "clean": "rm -rf build",
-    "copy-folders": "mkdir build/swagger build/config ; cp -R src/swagger/* build/swagger/ ; cp -R src/config/* build/config",
-    "build": "NODE_ENV=production npm run clean && babel src -s -d build && npm run copy-folders",
+    "build": "NODE_ENV=production npm run clean && babel src -s -d build",
     "serve": "NODE_ENV=production node --optimize_for_size --max_old_space_size=920 --gc_interval=100 build/server.js"
   },
   "pre-commit": {
