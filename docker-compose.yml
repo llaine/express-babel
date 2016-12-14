@@ -1,0 +1,16 @@
+# --------------
+# DEV STACK
+# --------------
+version: '2'
+services:
+  nmy-express-babel:
+    build:
+      context: .
+      dockerfile: Dockerfile-dev
+    volumes:
+    - ./src:/app/src
+    ports:
+    - "127.0.0.1:3000:3000"
+    environment:
+    - NODE_ENV=development
+    command: npm start

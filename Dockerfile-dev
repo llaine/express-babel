@@ -1,0 +1,19 @@
+FROM node:latest
+
+ENV ROOT_APP=/app
+ENV APP=/app/src
+ENV PORT 3000
+
+RUN mkdir -p $ROOT_APP
+
+COPY package.json $ROOT_APP
+
+WORKDIR $ROOT_APP
+
+RUN npm install
+
+RUN npm install -g nodemon flow-bin mocha babel-cli
+
+EXPOSE 3000
+
+CMD npm start

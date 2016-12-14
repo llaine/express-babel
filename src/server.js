@@ -1,39 +1,25 @@
-'use strict';
-
-import express from 'express';
-import SwaggerTools from 'swagger-tools';
-import cors from 'cors';
-import JsonRefs from 'json-refs';
-
-// Swagger documentation
-import SwaggerDoc from './swagger/index.json';
-import ErrorMiddleware from './middlewares/error';
-import LoggerMiddleware from './middlewares/logger';
+import express, { Router } from 'express'
+import ErrorMiddleware from './middlewares/error'
+import LoggerMiddleware from './middlewares/logger'
 
 
 // Options configuration
-const PORT = process.env.port || 3000;
-const controllersOpts = {
-  'controllers': `${__dirname}/controllers`
-};
+const PORT = process.env.port || 3000
 
 // App creation
-const app = express();
+const app = express()
 
-// Middleware for express
-app.use(LoggerMiddleware);
+// Middlewares
+app.use(LoggerMiddleware)
+app.use(ErrorMiddleware)
 
-// Swagger conf
-JsonRefs.resolveRefs(SwaggerDoc)
-    .then(swaggerDoc => {
-      SwaggerTools.initializeMiddleware(swaggerDoc.resolved, Middlerwares => {
-        app.use(cors());
-        app.use(Middlerwares.swaggerMetadata());
-        app.use(Middlerwares.swaggerValidator());
-        app.use(Middlerwares.swaggerUi());
-        app.use(Middlerwares.swaggerRouter(controllersOpts));
-        app.use(ErrorMiddleware);
-        app.listen(PORT, () => console.log(`Listenning to ${PORT}`));
-      });
-    });
+// Router
+// TODO @Nico : replace by react router
+const router = Router()
+router.get('/', (req, res, next) => {
+  res.send('hello world')
+})
 
+app.use('/', router)
+
+app.listen(PORT, () => console.log(`Listenning to ${PORT}`)) // eslint-disable-line
