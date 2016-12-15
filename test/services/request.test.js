@@ -1,53 +1,59 @@
 'use strict';
 
 import sinon from 'sinon';
-import chai from 'chai';
-import request from 'request';
+import chai, { expect } from 'chai';
+import request from 'request-promise-native';
 
 import RequestService from '../../src/services/request';
+import conf from '../../src/config/lokalise.json';
 
 describe('RequestService', () => {
-  describe('#get', () => {
-    it('crash if the url is empty', done => {
-      chai.expect(function () {
-        new RequestService('').get('')
-            .error(function (err) {
-              chai.expect(err).not.to.be.empty
-            })
-      }).to.throw;
-      done()
-    });
+  const url = 'https://lokalise.co/api/project/export';
+  const params = {id: '7085695957860508106c08.37278469', type:'json'};
+  describe('#post', function() {
+    this.timeout(10000);
+    after(() => {
+      request.post.restore();
+    })
 
-    it('crash if the url is not correct', done => {
-      chai.expect(function () {
-        new RequestService().get('toto').error(function (err) {
-              chai.expect(err).not.to.be.empty
-            })
-      }).to.throw;
-
-      chai.expect(function () {
-        new RequestService().get('htpp://fee').error(function (err) {
-          chai.expect(err).not.to.be.empty
-        })
-      }).to.throw;
-      done()
-    });
-
-    const expectedResp = {hello:'world'};
-    before(() => sinon.stub(request, 'get').yields(JSON.stringify(expectedResp)));
-    after(() => request.get.restore());
+    it('should call request#post', done => {
+      const spyPost = sinon.spy(request, 'post');
 
 
-    it('give you a promise when everything work fine', done => {
-      new RequestService().get('http://google.com')
-        .then(function (result) {
-          request.get.called.should.be.equal(true);
-          chai.expect(result).not.to.be.empty
-          chai.expect(result).to.deep.equal(expectedResp)
-          done()
-        }).catch(() => done())
-    });
-
+      new RequestService(conf.credentials['api-key'])
+        .post(url, params)
+        .then(() => {
+          expect(spyPost.calledOnce).to.be.true;
+          done();
+        });
+    })
   });
+
+  describe('#getArchivePath', () => {
+    it('call post', done => {
+      const s = new RequestService(conf.credentials['api-key']);
+      const spyPost = sinon.spy(s, 'post');
+
+      s.getArchivePath(url, params)
+        .then(() => {
+          expect(spyPost.calledOnce).to.be.true;
+          done()
+        })
+    })
+  })
+
+  describe('#downloadFile', function() {
+    this.timeout(10000);
+    it('calls request', done => {
+      const s = new RequestService(conf.credentials['api-key']);
+      const spyPost = sinon.spy(request);
+
+      s.downloadFile(url)
+        .then(() => {
+          expect(spyPost.calledOnce).to.be.true;
+          done()
+        })
+    })
+  })
 });
 
