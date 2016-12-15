@@ -24,7 +24,7 @@ export default class FileSystemService {
    * @param format
    * @returns {Promise}
    */
-  static readMultipleFiles(projectName: string, format: string) {
+  static readMultipleFiles(projectName: string, format: string): Promise<*> {
     const directoryName: string = `${BASE_DIR}/${projectName}`;
     debug(`#readJsonFiles : Reading multilple ${format} file in ${directoryName}`);
     return readdirPromise(directoryName)
@@ -40,7 +40,7 @@ export default class FileSystemService {
    * @param path
    * @returns {*}
    */
-  static pathExists(path) {
+  static pathExists(path): boolean {
     debug(`#pathExists : Checking path exists ${BASE_DIR}/${path}`);
     return fs.existsSync(`${BASE_DIR}/${path}`);
   }
@@ -51,7 +51,7 @@ export default class FileSystemService {
    * @param file
    * @param projectKeyId
    */
-  static unzipIntoFs(file: string, projectKeyId: string) {
+  static unzipIntoFs(file: string, projectKeyId: string): Promise<*> {
     debug(`#unzipIntoFs : Unzipping ${file} for project ${projectKeyId}`);
     return extractPromise(file, { dir: `${BASE_DIR}/${projectKeyId}`}).then(() => FileSystemService.removeFile(file));
   }
@@ -60,7 +60,7 @@ export default class FileSystemService {
    * Remove a file from the filesystem
    * @param file
    */
-  static removeFile(file) {
+  static removeFile(file): void {
     debug(`#removeFile : Removing ${file} from the filesystem`);
     fs.unlinkSync(`${file}`);
   }
@@ -72,7 +72,7 @@ export default class FileSystemService {
    * @param projectKeyId
    * @returns {Promise}
    */
-  static saveFile(fileName: string, body: any, projectKeyId: string) {
+  static saveFile(fileName: string, body: any, projectKeyId: string): Promise<*> {
     debug('#saveZipFile : Writing .zip into filesystem');
     return writeFilePromise(fileName, body).then(() => FileSystemService.unzipIntoFs(fileName, projectKeyId));
   }
@@ -82,7 +82,7 @@ export default class FileSystemService {
    * @param directory
    * @returns {Request|Promise.<boolean>|*}
    */
-  static isDirectoryEmpty(directory: string): boolean {
+  static isDirectoryEmpty(directory: string): Promise<boolean> {
     return readdirPromise(directory).then(files => files.length === 0);
   }
 
@@ -94,7 +94,7 @@ export default class FileSystemService {
    * @param format
    * @returns {Promise}
    */
-  static translations(lang?: string, projectName: string, format: string) {
+  static translations(lang?: string, projectName: string, format: string): Promise<*> {
     debug(`#readFiles : Retrieving translations files for ${lang ? lang : ''} at ${projectName} in ${format}`);
     if (!lang) return FileSystemService.readMultipleFiles(projectName, format);
 

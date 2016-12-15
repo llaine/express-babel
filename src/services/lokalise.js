@@ -25,7 +25,7 @@ class LokaliseService {
   token: string;
   requestService: Object;
 
-  constructor() {
+  constructor(): void {
     this.token = lokaliseConfig.credentials['api-key'];
     this.requestService = new RequestService(this.token);
   }
@@ -34,7 +34,7 @@ class LokaliseService {
    * Load project from the Lokalise API
    * @returns {Promise}
    */
-  getProjects() {
+  getProjects(): Promise<*> {
     debug('#getProjects');
     return this.requestService.get(lokaliseConfig.resources.projects).then((result) => result.projects);
   }
@@ -45,7 +45,7 @@ class LokaliseService {
    * @param params
    * @returns {Promise}
    */
-  getTranslationFromFS(params: ProjectParams) {
+  getTranslationFromFS(params: ProjectParams): Promise<*> {
     if (!FileSystemService.pathExists(params.project)) {
       debug(`#getTranslationFromFS : project directory ${params.project} doesnt exists`);
       return Promise.reject(errors.nilFolderError());
@@ -61,7 +61,7 @@ class LokaliseService {
    * @param params
    * @returns {Promise}
    */
-  getTranslationFromApi(params: ProjectParams) {
+  getTranslationFromApi(params: ProjectParams): Promise<*> {
     debug(`#getTranslationFromApi : Getting translations for ${params.project} with type ${params.format}`);
     return this.requestService
         .processZipFile(lokaliseConfig.resources.download, {id: params.project, type: params.format})
@@ -77,7 +77,7 @@ class LokaliseService {
    * @param params
    * @returns {Promise}
    */
-  getTranslations(params: ProjectParams) {
+  getTranslations(params: ProjectParams): Promise<*> {
     debug('#getTranslationsForProject : Getting translations for project');
     return this.getTranslationFromFS(params)
       .catch(error => {
