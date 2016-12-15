@@ -17,7 +17,7 @@ describe('Logger', () => {
 
     it('display logging in console with request object', () => {
       const remoteAddress = {connection:{remoteAddress:'remote address'}};
-      logRequest(remoteAddress, 'resource')
+      logRequest(remoteAddress, 'resource');
       chai.expect(winston.info).to.be.called;
     });
 
@@ -26,7 +26,8 @@ describe('Logger', () => {
         logRequest()
       }).to.throw
     })
-  })
+  });
+
   describe('#debug', () => {
     before(() => sinon.spy(winston, 'debug'));
     after(() => winston.debug.restore());
