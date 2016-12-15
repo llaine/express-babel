@@ -19,7 +19,8 @@
     "request-promise": "^4.0.2",
     "request-promise-native": "^1.0.3",
     "swagger-tools": "^0.10.1",
-    "unix-timestamp": "^0.2.0"
+    "unix-timestamp": "^0.2.0",
+    "winston": "^2.3.0"
   },
   "devDependencies": {
     "babel-cli": "^6.18.0",
