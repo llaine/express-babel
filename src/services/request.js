@@ -79,7 +79,7 @@ export default class RequestService {
    * @param form
    * @returns {Promise}
    */
-  processZipFile(url: string, form: any) {
+  processZipFile(url: string, form: any): Promise<*> {
     const downloadParams = arguments;
     const BASE_URL = 'https://lokalise.co/';
     const projectKeyId: string = form.id;
