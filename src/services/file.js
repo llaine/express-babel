@@ -3,10 +3,10 @@
 
 import fs from 'fs';
 import extract from 'extract-zip';
-import { debug } from './logger';
+import path from 'path';
 
-import { promisify } from './utils';
-
+import {debug} from './logger';
+import {promisify} from './utils';
 import * as errors from './error';
 
 const BASE_DIR = '/tmp/dooku';
@@ -16,6 +16,7 @@ const readdirPromise = promisify(fs.readdir);
 const extractPromise = promisify(extract);
 const writeFilePromise = promisify(fs.writeFile);
 const readfilePromise = promisify(fs.readFile)
+
 
 export default class FileSystemService {
   /**
@@ -30,9 +31,9 @@ export default class FileSystemService {
     return readdirPromise(directoryName)
         .then(files =>
             Promise.all(files
-                          .filter(file => file.split('.')[1] === format)
-                          .map(filename => FileSystemService
-                                            ._readFileWithFormat(`${directoryName}/${filename}`, format))));
+                .filter(file => file.split('.')[1] === format)
+                .map(filename => FileSystemService
+                    ._readFileWithFormat(`${directoryName}/${filename}`, format))));
   }
 
   /**
@@ -53,7 +54,7 @@ export default class FileSystemService {
    */
   static unzipIntoFs(file: string, projectKeyId: string): Promise<*> {
     debug(`#unzipIntoFs : Unzipping ${file} for project ${projectKeyId}`);
-    return extractPromise(file, { dir: `${BASE_DIR}/${projectKeyId}`}).then(() => FileSystemService.removeFile(file));
+    return extractPromise(file, {dir: `${BASE_DIR}/${projectKeyId}`}).then(() => FileSystemService.removeFile(file));
   }
 
   /**
@@ -75,15 +76,6 @@ export default class FileSystemService {
   static saveFile(fileName: string, body: any, projectKeyId: string): Promise<*> {
     debug('#saveZipFile : Writing .zip into filesystem');
     return writeFilePromise(fileName, body).then(() => FileSystemService.unzipIntoFs(fileName, projectKeyId));
-  }
-
-  /**
-   * Check if a directory is empty
-   * @param directory
-   * @returns {Request|Promise.<boolean>|*}
-   */
-  static isDirectoryEmpty(directory: string): Promise<boolean> {
-    return readdirPromise(directory).then(files => files.length === 0);
   }
 
   /**
@@ -122,15 +114,41 @@ export default class FileSystemService {
    * @returns {Request|Promise.<TResult>|*}
    * @private
    */
-  static _readFileWithFormat(file: string, format: string) {
+  static _readFileWithFormat(file: string, format: string): Promise<Object> {
     debug(`#_readFileWithFormat: Reading ${file} with ${format}`);
+    const locale = FileSystemService._getLocaleFromFileName(file);
     return readfilePromise(file, 'utf8')
         .then(result => {
           if (format === 'json') {
-            return JSON.parse(result);
+            return FileSystemService._appendFormatToFile(locale, JSON.parse(result));
           }
 
-          return result;
+          return FileSystemService._appendFormatToFile(locale, result);
         });
+  }
+
+  /**
+   * Extract the filename from a file in a specific path.
+   * @param filepath
+   * @returns {string}
+   * @private
+   */
+  static _getLocaleFromFileName(filepath: string): string {
+    const file: string = path.basename(filepath);
+    const fileInfosArray: Array<string> = file.split('.');
+    return fileInfosArray[0]; // First for filename
+  }
+
+  /**
+   * Prefix the content with the locale
+   * @param locale
+   * @param content
+   * @returns {{}}
+   * @private
+   */
+  static _appendFormatToFile(locale: string, content: Object): any {
+    return {
+      [locale]: content
+    };
   }
 }
