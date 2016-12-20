@@ -116,39 +116,13 @@ export default class FileSystemService {
    */
   static _readFileWithFormat(file: string, format: string): Promise<Object> {
     debug(`#_readFileWithFormat: Reading ${file} with ${format}`);
-    const locale = FileSystemService._getLocaleFromFileName(file);
     return readfilePromise(file, 'utf8')
       .then(result => {
         if (format === 'json') {
-          return FileSystemService._appendFormatToFile(locale, JSON.parse(result));
+          return JSON.parse(result);
         }
 
         return result;
       });
-  }
-
-  /**
-   * Extract the filename from a file in a specific path.
-   * @param filepath
-   * @returns {string}
-   * @private
-   */
-  static _getLocaleFromFileName(filepath: string): string {
-    const file: string = path.basename(filepath);
-    const fileInfosArray: Array<string> = file.split('.');
-    return fileInfosArray[0]; // First for filename
-  }
-
-  /**
-   * Prefix the content with the locale
-   * @param locale
-   * @param content
-   * @returns {{}}
-   * @private
-   */
-  static _appendFormatToFile(locale: string, content: Object): any {
-    return {
-      [locale]: content
-    };
   }
 }

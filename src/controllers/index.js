@@ -1,14 +1,24 @@
 // @flow
 
 import LokaliseService from '../services/lokalise';
+import _ from 'lodash';
 
 import type { ProjectParams } from '../services/lokalise';
 
+type Translation = Object
 type QueryString = {
   project: Array<string>;
   lang: string;
   format: string;
   reload: boolean
+};
+
+const Locales = ['de', 'en', 'es', 'fr', 'nl', 'tr'];
+const mergeTwoTranslationObj = (firstObj: Translation, secondObj: Translation): Translation => Object.assign(firstObj, secondObj);
+const appendLocaleInTranslation = (locale: string, translation: Translation) => {
+  return {
+    [locale]: translation
+  };
 };
 
 /**
@@ -20,6 +30,25 @@ function sanitizeProjects(projects: string): Array<string> {
   const commaSeparator: string = ',';
   const arr: Array<string> = projects.split(commaSeparator);
   return arr.map(item => item.trim());
+}
+
+/**
+ * This function take cares of "flattenning" multiple projects
+ * @param translations
+ * @returns {*}
+ */
+function mergeTranslations(translations: Array<Array<Translation>>): Array<Translation> {
+  // Removing the first element
+  const firstTranslationProject: Array<Translation> = translations.shift();
+
+  const translationsFlattened: Array<Array<Translation>> = translations.map((promise, i) => {
+    return firstTranslationProject.map((currentTranslation: Translation, position: number) => {
+      const otherTranslationProject: Translation = translations[i][position];
+      return appendLocaleInTranslation(Locales[position], mergeTwoTranslationObj(currentTranslation, otherTranslationProject));
+    });
+  });
+
+  return _.first(translationsFlattened);
 }
 
 /**
@@ -37,7 +66,7 @@ function fetchOneProject(project: ProjectParams): Promise<*> {
 }
 
 /**
- * Responsible to fetch multiple project and return them as an array of promises.
+ * Responsible to fetch multiple project and them as a single object.
  * @param params
  * @returns {Promise.<*>}
  */
@@ -49,7 +78,11 @@ function fetchMultipleProjects(params: QueryString): Promise<*> {
     };
 
     return fetchOneProject(project);
-  }));
+  }))
+  /**
+   * Merging all the results into one.
+   */
+  .then(mergeTranslations);
 }
 
 /**
