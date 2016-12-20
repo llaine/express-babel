@@ -6,6 +6,7 @@ import _ from 'lodash';
 import type { ProjectParams } from '../services/lokalise';
 
 type Translation = Object
+type Translations = Array<Array<Translation>>;
 type QueryString = {
   project: Array<string>;
   lang: string;
@@ -32,15 +33,16 @@ function sanitizeProjects(projects: string): Array<string> {
   return arr.map(item => item.trim());
 }
 
+
 /**
- * This function take cares of "flattenning" multiple projects
+ * Merge multiple translations project into one big object
+ * for every language.
  * @param translations
  * @returns {*}
  */
-function mergeTranslations(translations: Array<Array<Translation>>): Array<Translation> {
+function mergeTranslationsForMultipleLocale(translations: Translations): Array<Translation> {
   // Removing the first element
   const firstTranslationProject: Array<Translation> = translations.shift();
-
   const translationsFlattened: Array<Array<Translation>> = translations.map((promise, i) => {
     return firstTranslationProject.map((currentTranslation: Translation, position: number) => {
       const otherTranslationProject: Translation = translations[i][position];
@@ -49,6 +51,29 @@ function mergeTranslations(translations: Array<Array<Translation>>): Array<Trans
   });
 
   return _.first(translationsFlattened);
+}
+
+/**
+ * Merge multiple translations project for one locale.
+ * @param translations
+ * @returns {*}
+ */
+function mergeTranslationsForOneLocale(translations: Translations): Translation {
+  return Object.assign({}, ...translations);
+}
+
+/**
+ * Merge multiple translations project into one big object.
+ * @param translations
+ * @param isLangQueried
+ * @returns {*}
+ */
+function mergeTranslations(translations: Translations, isLangQueried: boolean): Array<Translation> | Translation {
+  if (isLangQueried) {
+    return mergeTranslationsForOneLocale(translations)
+  }
+
+  return mergeTranslationsForMultipleLocale(translations);
 }
 
 /**
@@ -82,7 +107,10 @@ function fetchMultipleProjects(params: QueryString): Promise<*> {
   /**
    * Merging all the results into one.
    */
-  .then(mergeTranslations);
+  .then((translations: Translations) => {
+    const isLangQueried: boolean = !!params.lang;
+    return mergeTranslations(translations, isLangQueried);
+  });
 }
 
 /**
