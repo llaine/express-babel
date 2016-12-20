@@ -15,7 +15,7 @@ const EXISTING_FORMATS = ['po', 'xls', 'strings', 'xliff', 'xml', 'json', 'php',
 const readdirPromise = promisify(fs.readdir);
 const extractPromise = promisify(extract);
 const writeFilePromise = promisify(fs.writeFile);
-const readfilePromise = promisify(fs.readFile)
+const readfilePromise = promisify(fs.readFile);
 
 
 export default class FileSystemService {
@@ -38,12 +38,12 @@ export default class FileSystemService {
 
   /**
    * Check if path exists on the filesystem
-   * @param path
+   * @param pathName
    * @returns {*}
    */
-  static pathExists(path): boolean {
-    debug(`#pathExists : Checking path exists ${BASE_DIR}/${path}`);
-    return fs.existsSync(`${BASE_DIR}/${path}`);
+  static pathExists(pathName: string): boolean {
+    debug(`#pathExists : Checking path exists ${BASE_DIR}/${pathName}`);
+    return fs.existsSync(`${BASE_DIR}/${pathName}`);
   }
 
   /**
@@ -118,13 +118,13 @@ export default class FileSystemService {
     debug(`#_readFileWithFormat: Reading ${file} with ${format}`);
     const locale = FileSystemService._getLocaleFromFileName(file);
     return readfilePromise(file, 'utf8')
-        .then(result => {
-          if (format === 'json') {
-            return FileSystemService._appendFormatToFile(locale, JSON.parse(result));
-          }
+      .then(result => {
+        if (format === 'json') {
+          return FileSystemService._appendFormatToFile(locale, JSON.parse(result));
+        }
 
-          return FileSystemService._appendFormatToFile(locale, result);
-        });
+        return result;
+      });
   }
 
   /**
