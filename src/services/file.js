@@ -3,10 +3,10 @@
 
 import fs from 'fs';
 import extract from 'extract-zip';
-import { debug } from './logger';
+import path from 'path';
 
-import { promisify } from './utils';
-
+import {debug} from './logger';
+import {promisify} from './utils';
 import * as errors from './error';
 
 const BASE_DIR = '/tmp/dooku';
@@ -15,7 +15,8 @@ const EXISTING_FORMATS = ['po', 'xls', 'strings', 'xliff', 'xml', 'json', 'php',
 const readdirPromise = promisify(fs.readdir);
 const extractPromise = promisify(extract);
 const writeFilePromise = promisify(fs.writeFile);
-const readfilePromise = promisify(fs.readFile)
+const readfilePromise = promisify(fs.readFile);
+
 
 export default class FileSystemService {
   /**
@@ -24,25 +25,25 @@ export default class FileSystemService {
    * @param format
    * @returns {Promise}
    */
-  static readMultipleFiles(projectName: string, format: string) {
+  static readMultipleFiles(projectName: string, format: string): Promise<*> {
     const directoryName: string = `${BASE_DIR}/${projectName}`;
     debug(`#readJsonFiles : Reading multilple ${format} file in ${directoryName}`);
     return readdirPromise(directoryName)
         .then(files =>
             Promise.all(files
-                          .filter(file => file.split('.')[1] === format)
-                          .map(filename => FileSystemService
-                                            ._readFileWithFormat(`${directoryName}/${filename}`, format))));
+                .filter(file => file.split('.')[1] === format)
+                .map(filename => FileSystemService
+                    ._readFileWithFormat(`${directoryName}/${filename}`, format))));
   }
 
   /**
    * Check if path exists on the filesystem
-   * @param path
+   * @param pathName
    * @returns {*}
    */
-  static pathExists(path) {
-    debug(`#pathExists : Checking path exists ${BASE_DIR}/${path}`);
-    return fs.existsSync(`${BASE_DIR}/${path}`);
+  static pathExists(pathName: string): boolean {
+    debug(`#pathExists : Checking path exists ${BASE_DIR}/${pathName}`);
+    return fs.existsSync(`${BASE_DIR}/${pathName}`);
   }
 
   /**
@@ -51,16 +52,16 @@ export default class FileSystemService {
    * @param file
    * @param projectKeyId
    */
-  static unzipIntoFs(file: string, projectKeyId: string) {
+  static unzipIntoFs(file: string, projectKeyId: string): Promise<*> {
     debug(`#unzipIntoFs : Unzipping ${file} for project ${projectKeyId}`);
-    return extractPromise(file, { dir: `${BASE_DIR}/${projectKeyId}`}).then(() => FileSystemService.removeFile(file));
+    return extractPromise(file, {dir: `${BASE_DIR}/${projectKeyId}`}).then(() => FileSystemService.removeFile(file));
   }
 
   /**
    * Remove a file from the filesystem
    * @param file
    */
-  static removeFile(file) {
+  static removeFile(file): void {
     debug(`#removeFile : Removing ${file} from the filesystem`);
     fs.unlinkSync(`${file}`);
   }
@@ -72,18 +73,9 @@ export default class FileSystemService {
    * @param projectKeyId
    * @returns {Promise}
    */
-  static saveFile(fileName: string, body: any, projectKeyId: string) {
+  static saveFile(fileName: string, body: any, projectKeyId: string): Promise<*> {
     debug('#saveZipFile : Writing .zip into filesystem');
     return writeFilePromise(fileName, body).then(() => FileSystemService.unzipIntoFs(fileName, projectKeyId));
-  }
-
-  /**
-   * Check if a directory is empty
-   * @param directory
-   * @returns {Request|Promise.<boolean>|*}
-   */
-  static isDirectoryEmpty(directory: string): boolean {
-    return readdirPromise(directory).then(files => files.length === 0);
   }
 
   /**
@@ -94,7 +86,7 @@ export default class FileSystemService {
    * @param format
    * @returns {Promise}
    */
-  static translations(lang?: string, projectName: string, format: string) {
+  static translations(lang?: string, projectName: string, format: string): Promise<*> {
     debug(`#readFiles : Retrieving translations files for ${lang ? lang : ''} at ${projectName} in ${format}`);
     if (!lang) return FileSystemService.readMultipleFiles(projectName, format);
 
@@ -122,15 +114,15 @@ export default class FileSystemService {
    * @returns {Request|Promise.<TResult>|*}
    * @private
    */
-  static _readFileWithFormat(file: string, format: string) {
+  static _readFileWithFormat(file: string, format: string): Promise<Object> {
     debug(`#_readFileWithFormat: Reading ${file} with ${format}`);
     return readfilePromise(file, 'utf8')
-        .then(result => {
-          if (format === 'json') {
-            return JSON.parse(result);
-          }
+      .then(result => {
+        if (format === 'json') {
+          return JSON.parse(result);
+        }
 
-          return result;
-        });
+        return result;
+      });
   }
 }
