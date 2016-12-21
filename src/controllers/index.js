@@ -70,7 +70,7 @@ function mergeTranslationsForOneLocale(translations: Translations): Translation 
  */
 function mergeTranslations(translations: Translations, isLangQueried: boolean): Array<Translation> | Translation {
   if (isLangQueried) {
-    return mergeTranslationsForOneLocale(translations)
+    return mergeTranslationsForOneLocale(translations);
   }
 
   return mergeTranslationsForMultipleLocale(translations);
