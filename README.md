@@ -1,9 +1,3 @@
-# Dooku
-
-This service provide I18n for the pantaflix services.
-
-This service is meant to be used with https://bitbucket.org/pantaflix/dooku-service in the front end pages.
-
 # To contribute
 
 In order to contribute to this project, a few guidelines needs to be respected :
@@ -53,7 +47,7 @@ $ npm run flow
 
 ```bash
 $ docker build -t dooku.pantaflix .
-$ docker run -t -p 3000:3000 -i dooku.pantaflix # browse localhost:3000
+$ docker run -t -p 3000:3000 -i i18n-service # browse localhost:3000
 ```
 
 
